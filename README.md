@@ -72,15 +72,59 @@ spec:
 Создать DaemonSet приложения, которое может прочитать логи ноды.
 
 1. Создать DaemonSet приложения, состоящего из multitool.
-
-#### Ответ:
 2. Обеспечить возможность чтения файла `/var/log/syslog` кластера MicroK8S.
 
 #### Ответ:
+
+Создал файл daemomset.yaml и применил его
+![image](https://github.com/DrDavidN/12-06-hw/assets/128225763/2e91cef9-0f98-4255-8a3b-e11350552486)
+
+Для обеспечения возможности чтения файла /var/log/syslog кластера MicroK8S внутри контейнера буду использовать параметр subPath, он позволит монтировать не всю директорию /var/log, а именно один файл syslog. Также буду использовать параметр readOnly, чтобы избежать проблем с доступом к файлу syslog, находящемуся на кластере MicroK8S.
+
 3. Продемонстрировать возможность чтения файла изнутри пода.
 
 #### Ответ:
+
+![image](https://github.com/DrDavidN/12-06-hw/assets/128225763/510f9aba-29d2-42a0-b1bc-d7cd08ff3e5a)
+
 4. Предоставить манифесты Deployment, а также скриншоты или вывод команды из п. 2.
 
 #### Ответ:
+
+``` YAML
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: test-daemonset
+  namespace: 12-06-hw
+  labels:
+    app: multitool
+spec:
+  selector:
+    matchLabels:
+      name: test-daemonset
+  template:
+    metadata:
+      labels:
+        name: test-daemonset
+    spec:
+      containers:
+      - name: multitool
+        image: wbitt/network-multitool
+        volumeMounts:
+        - name: logdir
+          mountPath: /nodes-logs/syslog
+          subPath: syslog
+        - name: varlog
+          mountPath: /var/log/syslog
+          readOnly: true
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: logdir
+        hostPath:
+          path: /var/log
+      - name: varlog
+        hostPath:
+          path: /var/log
+```
 ------
